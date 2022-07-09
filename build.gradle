@@ -14,7 +14,7 @@ sourceSets {
         java.srcDirs = ['src/main']
         resources {
             srcDirs 'src/resources'
-            includes ['**/*.txt']
+            includes['**/*.txt']
         }
     }
 }
@@ -31,14 +31,23 @@ dependencies {
 }
 
 jar {
-    if (LOCAL_JAR.toBoolean()) {
-        from {
-            configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
-        }
+    from {
+        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
     }
     manifest {
         attributes(
                 'Main-Class': 'com.tonicsystems.jarjar.Main'
         )
+    }
+    doLast {
+        def lib = outputs.files.singleFile
+        def lastLib = new File(lib.parentFile, "${lib.name.take(lib.name.lastIndexOf('.'))}-processed.jar")
+        exec {
+            workingDir "${lib.parentFile.absolutePath}"
+            executable 'java'
+            args '-jar', "${lib.name}", "process", "${project.file('jarjar-rules.txt').absolutePath}",
+                    "${lib.name}", "${lastLib.name}"
+        }
+        lastLib.renameTo(lib)
     }
 }

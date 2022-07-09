@@ -1,0 +1,2 @@
+zap module-info
+rule org.objectweb.asm.** com.tonicsystems.jarjar.asm.@1
