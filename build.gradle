@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group 'com.chaos'
+version '1.4-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['src/main']
+        resources {
+            srcDirs 'src/resources'
+            includes ['**/*.txt']
+        }
+    }
+}
+
+configurations {
+    // configuration that holds jars to include in the jar
+    extraLibs
+}
+
+dependencies {
+    extraLibs 'org.ow2.asm:asm:8.0.1'
+    extraLibs 'org.ow2.asm:asm-commons:8.0.1'
+    configurations.implementation.extendsFrom(configurations.extraLibs)
+}
+
+jar {
+    if (LOCAL_JAR.toBoolean()) {
+        from {
+            configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+    }
+    manifest {
+        attributes(
+                'Main-Class': 'com.tonicsystems.jarjar.Main'
+        )
+    }
+}
